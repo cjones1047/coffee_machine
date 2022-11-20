@@ -1,3 +1,4 @@
+from time import sleep
 
 MENU = {
     "espresso": {
@@ -34,7 +35,6 @@ resources = {
 
 
 def run_machine():
-
     def run_report():
         for resource in resources:
             if resource == "money":
@@ -51,8 +51,32 @@ def run_machine():
         return True
 
     def successful_transaction(drink):
-        print(f"Please insert coins for {drink}:\n")
+        drink_cost = round(MENU[drink]["cost"], 2)
+        formatted_drink_cost = "{:0,.2f}".format(float(drink_cost))
+        print(f"Please insert ${formatted_drink_cost} for a {drink}:")
+        quarters = int(input("Quarters: "))
+        dimes = int(input("Dimes: "))
+        nickels = int(input("Nickels: "))
         pennies = int(input("Pennies: "))
+        user_input = round((quarters * 0.25) +
+                           (dimes * 0.10) +
+                           (nickels * 0.05) +
+                           (pennies * 0.01), 2)
+        if user_input == drink_cost:
+            resources["money"] += drink_cost
+            return True
+        elif user_input > drink_cost:
+            change = round(user_input - drink_cost, 2)
+            formatted_change = "{:0,.2f}".format(float(change))
+            resources["money"] += drink_cost
+            print(f"Dispensing change of ${formatted_change} ...")
+            sleep(3)
+            return True
+        else:
+            formatted_user_input = "{:0,.2f}".format(float(user_input))
+            print(f"Insufficient amount inserted. Returning your ${formatted_user_input} ...")
+            sleep(3)
+            return False
 
     # TODO 1. Prompt user by asking “What would you like? (espresso/latte/cappuccino):”. Prompt should show again after
     #  customer drink is dispensed
@@ -75,13 +99,12 @@ def run_machine():
         return
     elif user_choice == "report":
         run_report()
-    elif user_choice in MENU:
-        if sufficient_resources(drink=user_choice):
-            successful_transaction(drink=user_choice)
+    elif user_choice in MENU and sufficient_resources(drink=user_choice):
+        successful_transaction(drink=user_choice)
+        print("Adjusting machine resources...")
 
-#
-    # TODO 7. Make coffee and adjust resources accordingly if the transaction was successful. After resources are
-    #  deducted, print 'Here is your {user_choice}. Enjoy.' and return to asking the user what they would like.
+# TODO 7. Make coffee and adjust resources accordingly if the transaction was successful. After resources are
+#  deducted, print 'Here is your {user_choice}. Enjoy.' and return to asking the user what they would like.
 
 
 run_machine()
